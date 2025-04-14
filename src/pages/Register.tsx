@@ -15,7 +15,7 @@ export default function Register() {
     console.log("👉 開始註冊");
   
     // 註冊帳號
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const {  error: signUpError } = await supabase.auth.signUp({
       email,
       password,
     });
