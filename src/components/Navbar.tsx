@@ -14,27 +14,26 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    if (!user) return;
+  
     const fetchAvatar = async () => {
-      if (user) {
-        const { data, error } = await supabase
-          .from("profile")
-          .select("avatar_url")
-          .eq("id", user.id)
-          .single();
-
-        if (!error && data?.avatar_url) {
-          console.log("✅ Navbar 載入頭貼：", data.avatar_url);
-          setAvatarUrl(data.avatar_url);
-        } else {
-          console.warn("⚠️ avatar_url 錯誤或不存在：", error, data);
-          setAvatarUrl(null);
-        }
+      const { data, error } = await supabase
+        .from("profile")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .single();
+  
+      if (!error && data?.avatar_url) {
+        console.log("✅ Navbar 載入頭貼：", data.avatar_url);
+        setAvatarUrl(data.avatar_url);
+      } else {
+        console.warn("⚠️ avatar_url 錯誤或不存在：", error, data);
+        setAvatarUrl(null);
       }
     };
-
+  
     fetchAvatar();
   }, [user]);
-
   return (
     <nav
       style={{
@@ -60,19 +59,23 @@ export default function Navbar() {
         {user ? (
           <>
             <img
-              src={avatarUrl || "/default-avatar.png"}
-              alt="頭貼"
-              onError={(e) => {
+                src={
+                avatarUrl
+            ? `${avatarUrl}?v=${new Date().getTime()}`
+            : "/default-avatar.png"
+        }
+            alt="頭貼"
+            onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = "/default-avatar.png";
-              }}
-              style={{
+            }}
+            style={{
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
                 objectFit: "cover",
-              }}
-            />
+            }}
+        />
             <span>{user.email}</span>
             <button onClick={handleLogout}>登出</button>
           </>

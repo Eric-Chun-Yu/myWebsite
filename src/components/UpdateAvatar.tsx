@@ -14,7 +14,7 @@ export default function UpdateAvatar() {
 
     const ext = selected.name.split(".").pop()?.toLowerCase();
     if (!["jpg", "jpeg", "png"].includes(ext || "")) {
-      setMessage("❌ 僅支援 jpg / png 格式");
+      setMessage("❌ 僅支援 jpg / png");
       return;
     }
 
@@ -31,7 +31,7 @@ export default function UpdateAvatar() {
     if (!file || !user) return;
 
     const ext = file.name.split(".").pop()?.toLowerCase();
-    const filePath = `${user.id}.${ext}`; // 或你可用 `${user.id}/${uuid()}.${ext}`
+    const filePath = `${user.id}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from("headphoto")
@@ -43,22 +43,20 @@ export default function UpdateAvatar() {
     }
 
     const { data } = supabase.storage.from("headphoto").getPublicUrl(filePath);
-    const publicUrl = data.publicUrl;
+    const avatarUrl = data.publicUrl;
 
     const { error: updateError } = await supabase
       .from("profile")
-      .update({ avatar_url: publicUrl })
+      .update({ avatar_url: avatarUrl })
       .eq("id", user.id);
 
     if (updateError) {
-      setMessage("❌ 更新頭貼網址失敗：" + updateError.message);
+      setMessage("❌ 更新資料庫失敗：" + updateError.message);
       return;
     }
 
-    setMessage("✅ 頭貼上傳並更新成功！");
-    setTimeout(() => {
-      window.location.reload(); // ✅ 強制刷新讓 Navbar 顯示新頭貼
-    }, 1000);
+    setMessage("✅ 頭貼上傳成功！");
+    setTimeout(() => window.location.reload(), 1000);
   };
 
   return (
