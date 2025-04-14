@@ -26,7 +26,7 @@ export default function Navbar() {
           console.log("✅ Navbar 載入頭貼：", data.avatar_url);
           setAvatarUrl(data.avatar_url);
         } else {
-          console.warn("⚠️ 無法載入 avatar_url，使用預設圖");
+          console.warn("⚠️ avatar_url 錯誤或不存在：", error, data);
           setAvatarUrl(null);
         }
       }
@@ -62,9 +62,10 @@ export default function Navbar() {
             <img
               src={avatarUrl || "/default-avatar.png"}
               alt="頭貼"
-              onError={(e) =>
-                (e.currentTarget.src = "/default-avatar.png")
-              }
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/default-avatar.png";
+              }}
               style={{
                 width: 40,
                 height: 40,

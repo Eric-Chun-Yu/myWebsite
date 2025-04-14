@@ -13,70 +13,67 @@ export default function Register() {
     e.preventDefault();
     setMessage("註冊中...");
     console.log("👉 開始註冊");
-  
+
     // 註冊帳號
-    const {  error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-  
+    const { error: signUpError } = await supabase.auth.signUp({ email, password });
+
     if (signUpError) {
       console.error("❌ 註冊錯誤：", signUpError.message);
       setMessage("❌ 註冊失敗：" + signUpError.message);
       return;
     }
-  
-    console.log("✅ 註冊成功，取得 session 中...");
-  
-    // 取得登入狀態
+
+    // 取得登入 session
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !sessionData.session) {
-      console.error("❌ Session 錯誤：", sessionError?.message);
-      setMessage("❌ 無法取得登入 session，請確認是否已關閉 Email 驗證功能");
+      setMessage("❌ 無法取得登入 session，請確認是否關閉 Email 驗證");
       return;
     }
-  
+
     const user = sessionData.session.user;
-    console.log("✅ 登入使用者 UID：", user.id);
-  
-    // 上傳頭貼（若有選）
+    console.log("✅ 使用者 UID：", user.id);
+
+    // 上傳頭貼
     let avatarUrl = "";
     if (avatarFile) {
       const ext = avatarFile.name.split('.').pop()?.toLowerCase();
-      if (!['jpg', 'jpeg', 'png'].includes(ext || "")) {
-        setMessage("❌ 僅支援 jpg / png 格式");
+      if (!["jpg", "jpeg", "png"].includes(ext || "")) {
+        setMessage("❌ 僅支援 jpg / png");
         return;
       }
-  
+
       const filePath = `${user.id}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("headphoto")
         .upload(filePath, avatarFile, { upsert: true });
-  
+
       if (uploadError) {
-        console.error("❌ 頭貼上傳失敗：", uploadError.message);
+        console.error("❌ 上傳頭貼失敗：", uploadError.message);
         setMessage("❌ 頭貼上傳失敗：" + uploadError.message);
         return;
       }
-  
-      const { data: urlData } = supabase.storage.from("headphoto").getPublicUrl(filePath);
-      avatarUrl = urlData.publicUrl;
+
+      // 取得公開網址
+      const { data } = supabase.storage.from("headphoto").getPublicUrl(filePath);
+      avatarUrl = data.publicUrl;
+      console.log("✅ 頭貼網址：", avatarUrl);
     }
-  
+
     // 寫入 profile 表
     const { error: profileError } = await supabase.from("profile").insert({
       id: user.id,
-      username: username,
+      username,
       avatar_url: avatarUrl,
     });
-  
+
     if (profileError) {
       console.error("❌ profile 寫入錯誤：", profileError.message);
       setMessage("❌ 儲存使用者資料失敗：" + profileError.message);
       return;
     }
-  
+
     setMessage("✅ 註冊成功！");
+    setTimeout(() => window.location.reload(), 1000); // 強制刷新
   };
 
   return (
@@ -85,30 +82,15 @@ export default function Register() {
       <form onSubmit={handleRegister}>
         <div>
           <label>Email：</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div>
           <label>密碼：</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         <div>
           <label>使用者名稱：</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
         </div>
         <div>
           <label>頭貼上傳（jpg/png）：</label>
@@ -118,7 +100,6 @@ export default function Register() {
             onChange={(e) => {
               const file = e.target.files?.[0] || null;
               setAvatarFile(file);
-
               if (file) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -135,11 +116,7 @@ export default function Register() {
         {previewUrl && (
           <div>
             <p>預覽：</p>
-            <img
-              src={previewUrl}
-              alt="預覽頭貼"
-              style={{ width: "120px", borderRadius: "50%", border: "1px solid #ccc" }}
-            />
+            <img src={previewUrl} alt="預覽頭貼" style={{ width: 120, borderRadius: "50%", border: "1px solid #ccc" }} />
           </div>
         )}
 
@@ -149,3 +126,4 @@ export default function Register() {
     </div>
   );
 }
+
