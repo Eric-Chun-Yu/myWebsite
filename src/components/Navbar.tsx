@@ -15,25 +15,37 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!user) return;
-  
-    const fetchAvatar = async () => {
-      const { data, error } = await supabase
-        .from("profile")
-        .select("avatar_url")
-        .eq("id", user.id)
-        .single();
-  
-      if (!error && data?.avatar_url) {
-        console.log("✅ Navbar 載入頭貼：", data.avatar_url);
-        setAvatarUrl(data.avatar_url);
+
+    const fetchAvatarFromBucket = async () => {
+      // 嘗試依副檔名組成路徑
+      const extensions = ["jpg", "jpeg", "png"];
+      let foundUrl = null;
+
+      for (const ext of extensions) {
+        const path = `${user.id}.${ext}`;
+        const { data } = supabase.storage
+          .from("headphoto")
+          .getPublicUrl(path);
+
+        // 可以額外確認網址是否真的存在（此處假設網址一定有效）
+        if (data?.publicUrl) {
+          foundUrl = data.publicUrl;
+          break;
+        }
+      }
+
+      if (foundUrl) {
+        console.log("✅ Navbar 從 headphoto bucket 載入頭貼：", foundUrl);
+        setAvatarUrl(foundUrl);
       } else {
-        console.warn("⚠️ avatar_url 錯誤或不存在：", error, data);
+        console.warn("⚠️ 找不到頭貼圖片");
         setAvatarUrl(null);
       }
     };
-  
-    fetchAvatar();
+
+    fetchAvatarFromBucket();
   }, [user]);
+
   return (
     <nav
       style={{
@@ -59,23 +71,23 @@ export default function Navbar() {
         {user ? (
           <>
             <img
-                src={
+              src={
                 avatarUrl
-            ? `${avatarUrl}?v=${new Date().getTime()}`
-            : "/default-avatar.png"
-        }
-            alt="頭貼"
-            onError={(e) => {
+                  ? `${avatarUrl}?v=${new Date().getTime()}`
+                  : "/default-avatar.png"
+              }
+              alt="頭貼"
+              onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = "/default-avatar.png";
-            }}
-            style={{
+              }}
+              style={{
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
                 objectFit: "cover",
-            }}
-        />
+              }}
+            />
             <span>{user.email}</span>
             <button onClick={handleLogout}>登出</button>
           </>

@@ -48,7 +48,7 @@ export default function UpdateAvatar() {
     const { error: updateError } = await supabase
       .from("profile")
       .update({ avatar_url: avatarUrl })
-      .eq("id", user.id);
+      .eq("user_id", user.id);
 
     if (updateError) {
       setMessage("❌ 更新資料庫失敗：" + updateError.message);
