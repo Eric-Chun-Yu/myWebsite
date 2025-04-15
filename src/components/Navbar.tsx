@@ -92,7 +92,7 @@ export default function Navbar() {
             <button onClick={handleLogout}>登出</button>
           </>
         ) : (
-          <Link to="/auth">登入 / 註冊</Link>
+          <Link to="/register">登入 / 註冊</Link>
         )}
       </div>
     </nav>

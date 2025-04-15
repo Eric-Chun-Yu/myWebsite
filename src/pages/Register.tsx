@@ -23,7 +23,6 @@ export default function Register() {
       return;
     }
 
-    // 取得登入 session
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !sessionData.session) {
       setMessage("❌ 無法取得登入 session，請確認是否關閉 Email 驗證");
@@ -53,13 +52,12 @@ export default function Register() {
         return;
       }
 
-      // 取得公開網址
       const { data } = supabase.storage.from("headphoto").getPublicUrl(filePath);
       avatarUrl = data.publicUrl;
       console.log("✅ 頭貼網址：", avatarUrl);
     }
 
-    // 寫入 profile 表
+    // 寫入 profile
     const { error: profileError } = await supabase.from("profile").insert({
       id: user.id,
       username,
@@ -73,27 +71,30 @@ export default function Register() {
     }
 
     setMessage("✅ 註冊成功！");
-    setTimeout(() => window.location.reload(), 1000); // 強制刷新
+    setTimeout(() => window.location.reload(), 1000);
   };
 
   return (
-    <div>
-      <h2>註冊帳號</h2>
-      <form onSubmit={handleRegister}>
-        <div>
-          <label>Email：</label>
+    <div style={{ maxWidth: 500, margin: "40px auto", padding: 20, border: "1px solid #ccc", borderRadius: 8 }}>
+      <h2 style={{ textAlign: "center" }}>註冊帳號</h2>
+      <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <label>
+          Email：
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>密碼：</label>
+        </label>
+
+        <label>
+          密碼：
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        <div>
-          <label>使用者名稱：</label>
+        </label>
+
+        <label>
+          使用者名稱（將顯示在留言板）：
           <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        </div>
-        <div>
-          <label>頭貼上傳（jpg/png）：</label>
+        </label>
+
+        <label>
+          頭貼上傳（jpg/png）：
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
@@ -111,19 +112,21 @@ export default function Register() {
               }
             }}
           />
-        </div>
+        </label>
 
         {previewUrl && (
-          <div>
+          <div style={{ textAlign: "center" }}>
             <p>預覽：</p>
             <img src={previewUrl} alt="預覽頭貼" style={{ width: 120, borderRadius: "50%", border: "1px solid #ccc" }} />
           </div>
         )}
 
-        <button type="submit">註冊</button>
+        <button type="submit" style={{ padding: "10px 20px", fontWeight: "bold" }}>
+          註冊
+        </button>
       </form>
-      <p>{message}</p>
+
+      <p style={{ marginTop: 10, color: "#d00", textAlign: "center" }}>{message}</p>
     </div>
   );
 }
-

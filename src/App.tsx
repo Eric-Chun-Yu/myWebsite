@@ -1,11 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Register from "./pages/Register";
+
 import About from "./pages/About";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Board from "./pages/Board";
 import Navbar from "./components/Navbar";
 import { useAuth } from "./contexts/AuthContext";
+import Register from "./pages/Register";
 
 function App() {
   const { user } = useAuth();
